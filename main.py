@@ -1,8 +1,10 @@
+import matplotlib.pyplot as plt
+
 from dataio import (
     load_igc_file,
     get_h_records,
     get_b_records,
-    extract_flight_info,
+    get_flight_info,
     parse_b_record,
     init_flightdata,
     clean_altitude_series
@@ -25,8 +27,14 @@ def main():
 
     # Get and clean altitude series
     gps_altitudes = [b['gpsAltitude'] for b in b_records]
+    pressure_altitudes = [b['pressAltitude'] for b in b_records]
     clean_gps_altitudes = clean_altitude_series(gps_altitudes)
+    clean_pressure_altitudes = clean_altitude_series(pressure_altitudes)
 
+    plt.plot(clean_gps_altitudes)
+    plt.plot(clean_pressure_altitudes)
+    plt.grid(True)
+    plt.show()
 
 if __name__ == "__main__":
     main()
