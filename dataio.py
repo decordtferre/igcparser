@@ -19,13 +19,13 @@ def get_flightinfo(h_records):
     date = get_igc_date(h_records)
 
     # next() loops over every record in the iterable h_records
-    pilot = next(record for record in h_records if record.startswith("HFPLTPILOTINCHARGE")).removeprefix("HFPLTPILOTINCHARGE:")
-    crew = next(record for record in h_records if record.startswith("HFCM2CREW2")).removeprefix("HFCM2CREW2:")
-    type_ = next(record for record in h_records if record.startswith("HFGTYGLIDERTYPE")).removeprefix("HFGTYGLIDERTYPE:")
-    reg = next(record for record in h_records if record.startswith("HFGIDGLIDERID")).removeprefix("HFGIDGLIDERID:")
-    comp_id = next(record for record in h_records if record.startswith("HFCIDCOMPETITIONID")).removeprefix("HFCIDCOMPETITIONID:")
-    competitionclass = next(record for record in h_records if record.startswith("HFCCLCOMPETITIONCLASS")).removeprefix("HFCCLCOMPETITIONCLASS:")
-    loggertype = next(record for record in h_records if record.startswith("HFFTYFRTYPE")).removeprefix("HFFTYFRTYPE:")
+    pilot = next(record for record in h_records if record.startswith("HFPLTPILOTINCHARGE")).removeprefix("HFPLTPILOTINCHARGE:").strip()
+    crew = next(record for record in h_records if record.startswith("HFCM2CREW2")).removeprefix("HFCM2CREW2:").strip()
+    type_ = next(record for record in h_records if record.startswith("HFGTYGLIDERTYPE")).removeprefix("HFGTYGLIDERTYPE:").strip()
+    reg = next(record for record in h_records if record.startswith("HFGIDGLIDERID")).removeprefix("HFGIDGLIDERID:").strip()
+    comp_id = next(record for record in h_records if record.startswith("HFCIDCOMPETITIONID")).removeprefix("HFCIDCOMPETITIONID:").strip()
+    competitionclass = next(record for record in h_records if record.startswith("HFCCLCOMPETITIONCLASS")).removeprefix("HFCCLCOMPETITIONCLASS:").strip()
+    loggertype = next(record for record in h_records if record.startswith("HFFTYFRTYPE")).removeprefix("HFFTYFRTYPE:").strip()
 
     # If there is no crew in the IGC-file
     if crew.strip() == '':
@@ -94,6 +94,7 @@ def get_end_time(igc_path):
     return -1
 
 # Correctly parses the latitude and returns it as a decimal floating point number in degrees
+# CAUTION: LATITUDE IS IN DD MMMMM
 def parse_lat(lat_str, dir_str):
     degrees = int(lat_str[:2])
     minutes = int(lat_str[2:7]) / 1000.0
@@ -103,6 +104,7 @@ def parse_lat(lat_str, dir_str):
     return decimal
 
 # Correctly parses the longitude and returns it as a decimal floating point number in degrees
+# CAUTION: LONGITUDE IS IN DDD MMMMM
 def parse_lon(lon_str, dir_str):
     degrees = int(lon_str[:3])
     minutes = int(lon_str[3:8]) / 1000.0
@@ -125,16 +127,21 @@ def parse_b_record(rij):
 # Gets the correct date out of the H-records (flight info) and returns the date
 def get_igc_date(h_records):
     date_line = next(
-        (line for line in h_records if line.startswith('HFDTE') and not line.startswith('HFDTEDATE')),
+        (line for line in h_records if line.strip().startswith('HFDTE') and not line.strip().startswith('HFDTEDATE')),
         None
     )
     if date_line:
-        date_raw = date_line.removeprefix('HFDTE')
+        date_raw = date_line.strip().removeprefix('HFDTE')
     else:
-        date_line = next((line for line in h_records if line.startswith('HFDTEDATE:')), None)
+        date_line = next((line for line in h_records if line.strip().startswith('HFDTEDATE:')), None)
         if date_line:
-            date_raw = date_line.removeprefix('HFDTEDATE:')
+            date_raw = date_line.strip().removeprefix('HFDTEDATE:')
         else:
+            # Print available header lines for debugging:
+            print("DEBUG: Could not find date. Available headers:")
+            for line in h_records:
+                print(repr(line))
             raise ValueError("No date line found in IGC headers.")
     return date_raw.strip()
+
 
