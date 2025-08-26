@@ -5,9 +5,11 @@ from dataio import (
     load_igc_file,
     get_h_records,
     get_b_records,
-   get_flight_info,
+    get_flightinfo,
     parse_b_record,
-    clean_altitude_series, get_start_time,
+    clean_altitude_series,
+    get_start_time,
+    get_end_time,
 )
 
 def plot_barogram_with_info(igc_path):
@@ -17,7 +19,7 @@ def plot_barogram_with_info(igc_path):
     b_records_raw = get_b_records(lines)
     b_records = [parse_b_record(b) for b in b_records_raw]
     start_time = get_start_time(igc_path)
-    end_time = get_start_time(igc_path)
+    end_time = get_end_time(igc_path)
 
     # --- Prepare altitude series ---
     gps = clean_altitude_series([b['gpsAltitude'] for b in b_records])
@@ -30,7 +32,7 @@ def plot_barogram_with_info(igc_path):
     step = max(1, N // 10)
 
     # --- Info block ---
-    info = get_flight_info(igc_path)
+    info = get_flightinfo(igc_path)
 
     lines_info = []
     lines_info.append(f"Date: {info['Date'].strip()}")
@@ -50,7 +52,7 @@ def plot_barogram_with_info(igc_path):
         lines_info.append(f"Logger: {info['Logger'].strip()}")
 
     lines_info.append(f"Takeoff time: {start_time if start_time else 'N/A'}")
-    lines_info.append(f"Landing time: {b_records[-1]['TimeUTC']}")
+    lines_info.append(f"Landing time: {end_time if end_time else 'N/A'}")
     infotext = "\n".join(lines_info)
 
     # --- Set up two columns: plot + info panel ---
@@ -81,5 +83,8 @@ def plot_barogram_with_info(igc_path):
     plt.tight_layout()
     plt.show()
 
-plot_barogram_with_info("/Users/ferredecordt/Documents/IGCreaderPython/2022-07-05-FLA-3VT-01.igc")
+
+if __name__ == "__main__":
+    # Example usage; replace path with a valid IGC file if available.
+    plot_barogram_with_info("/path/to/flight.igc")
 
